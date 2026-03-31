@@ -43,14 +43,6 @@ The analysis combines Python-based data processing with interactive visualisatio
 
 ---
 
-## 📁 Repository Structure
-├── earthquake_notebook.ipynb # Main analysis notebook
-├── data/ # Raw and cleaned datasets
-├── webpage_presentation/ # Web-based visualisation
-└── .gitignore
-
----
-
 ## 🚀 How to Use
 
 ### Notebook
