@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Global Earthquake Patterns 2015–2025</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --ink: #0f0f0f;
+        --ink-mid: #2e2e2e;
+        --ink-soft: #5a5a5a;
+        --paper: #f5f2ec;
+        --paper-warm: #ede9e0;
+        --dark: #111010;
+        --dark-card: #1a1917;
+        --red: #c9150a;
+        --red-bright: #e3210b;
+        --red-muted: #8a0e05;
+        --white: #ffffff;
+        --border: rgba(0, 0, 0, 0.1);
+        --border-lt: rgba(255, 255, 255, 0.08);
+        --font-display: "Playfair Display", Georgia, serif;
+        --font-body: "Source Serif 4", Georgia, serif;
+        --max-w: 1100px;
+        --gutter: clamp(20px, 5vw, 60px);
+        --section-pad: clamp(60px, 8vw, 120px);
+      }
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        font-family: var(--font-body);
+        background: var(--paper);
+        color: var(--ink);
+        font-size: clamp(15px, 1.1vw, 17px);
+        line-height: 1.7;
+        overflow-x: hidden;
+      }
+      .hero {
+        background: var(--dark);
+        color: var(--white);
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        padding: var(--gutter);
+      }
+      .hero::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(
+            ellipse 80% 60% at 70% 50%,
+            rgba(201, 21, 10, 0.18) 0%,
+            transparent 65%
+          ),
+          radial-gradient(
+            ellipse 50% 80% at 20% 80%,
+            rgba(201, 21, 10, 0.08) 0%,
+            transparent 60%
+          );
+        pointer-events: none;
+      }
+      .hero-bg-text {
+        position: absolute;
+        bottom: -0.1em;
+        right: -0.02em;
+        font-family: var(--font-display);
+        font-size: clamp(100px, 18vw, 280px);
+        font-weight: 900;
+        color: rgba(255, 255, 255, 0.03);
+        line-height: 1;
+        pointer-events: none;
+        letter-spacing: -0.04em;
+        user-select: none;
+      }
+      .hero-inner {
+        position: relative;
+        z-index: 1;
+        max-width: 800px;
+        width: 100%;
+      }
+      .hero-label {
+        font-weight: 300;
+        font-size: 0.8rem;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--red-bright);
+        margin-bottom: 1.5rem;
+      }
+      .hero h1 {
+        font-family: var(--font-display);
+        font-size: clamp(52px, 8vw, 110px);
+        font-weight: 900;
+        line-height: 0.92;
+        letter-spacing: -0.03em;
+        margin-bottom: 2rem;
+      }
+      .hero h1 em {
+        font-style: italic;
+        color: var(--red-bright);
+      }
+      .hero-sub {
+        font-weight: 300;
+        font-size: clamp(15px, 1.3vw, 18px);
+        color: rgba(255, 255, 255, 0.65);
+        max-width: 520px;
+        margin-bottom: 3rem;
+        line-height: 1.65;
+      }
+      .hero-stats {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+      .stat {
+        display: flex;
+        flex-direction: column;
+      }
+      .stat-num {
+        font-family: var(--font-display);
+        font-size: clamp(26px, 3vw, 38px);
+        font-weight: 700;
+        color: var(--white);
+        line-height: 1;
+      }
+      .stat-label {
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: rgba(255, 255, 255, 0.4);
+        margin-top: 4px;
+      }
+      .stat-divider {
+        width: 1px;
+        height: 40px;
+        background: rgba(255, 255, 255, 0.15);
+        margin: 0 20px;
+      }
+      .section-nav {
+        position: fixed;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .nav-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--ink-soft);
+        opacity: 0.3;
+        transition: opacity 0.3s, background 0.3s, transform 0.3s;
+        display: block;
+      }
+      .nav-dot:hover,
+      .nav-dot.active {
+        opacity: 1;
+        background: var(--red);
+        transform: scale(1.4);
+      }
+      .section {
+        padding: var(--section-pad) var(--gutter);
+        position: relative;
+      }
+      .section > * {
+        max-width: var(--max-w);
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .section--dark {
+        background: var(--dark);
+        color: var(--white);
+      }
+      .section--dark .section-num {
+        color: var(--red-muted);
+      }
+      .section--dark h2 {
+        color: var(--white);
+      }
+      .section--dark .section-question {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .section--dark .section-intro {
+        color: rgba(255, 255, 255, 0.65);
+      }
+      .section--dark .chart-caption {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .nepal-section {
+        background: var(--paper-warm);
+        overflow: hidden;
+      }
+      .nepal-accent {
+        position: absolute;
+        top: 0;
+        right: -0.1em;
+        font-family: var(--font-display);
+        font-size: clamp(80px, 14vw, 200px);
+        font-weight: 900;
+        color: rgba(201, 21, 10, 0.05);
+        line-height: 1;
+        pointer-events: none;
+        user-select: none;
+      }
+      .section--conclusion {
+        background: var(--ink);
+        color: var(--white);
+      }
+      .section--conclusion .section-num {
+        color: var(--red-muted);
+      }
+      .section--conclusion h2 {
+        color: var(--white);
+      }
+      .section--conclusion .section-question {
+        color: rgba(255, 255, 255, 0.45);
+      }
+      .section-header {
+        display: flex;
+        align-items: flex-start;
+        gap: clamp(20px, 3vw, 50px);
+        margin-bottom: clamp(40px, 5vw, 70px);
+        padding-bottom: clamp(30px, 4vw, 50px);
+        border-bottom: 1px solid var(--border);
+      }
+      .section--dark .section-header,
+      .section--conclusion .section-header {
+        border-bottom-color: var(--border-lt);
+      }
+      .section-num {
+        font-family: var(--font-display);
+        font-size: clamp(50px, 6vw, 80px);
+        font-weight: 900;
+        color: var(--red-muted);
+        opacity: 0.4;
+        line-height: 1;
+        flex-shrink: 0;
+        margin-top: 4px;
+        letter-spacing: -0.04em;
+      }
+      .section-title-block h2 {
+        font-family: var(--font-display);
+        font-size: clamp(32px, 4.5vw, 58px);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.02em;
+        margin-bottom: 12px;
+      }
+      .section-question {
+        font-style: italic;
+        font-weight: 300;
+        color: var(--ink-soft);
+        font-size: clamp(14px, 1.2vw, 17px);
+        line-height: 1.5;
+      }
+      .section-intro {
+        font-weight: 300;
+        font-size: clamp(15px, 1.2vw, 18px);
+        color: var(--ink-mid);
+        max-width: 680px;
+        margin-bottom: 50px;
+        line-height: 1.7;
+      }
+      .chart-block {
+        margin-bottom: clamp(40px, 5vw, 70px);
+      }
+      .chart-block--wide {
+        max-width: var(--max-w);
+      }
+      .chart-block--mid {
+        max-width: 820px;
+      }
+      .chart-block--full {
+        max-width: 100%;
+        width: 100%;
+      }
+      .chart-wrap {
+        background: var(--white);
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 20px rgba(0, 0, 0, 0.07), 0 0 0 1px var(--border);
+      }
+      .section--dark .chart-wrap,
+      .section--conclusion .chart-wrap {
+        box-shadow: 0 2px 30px rgba(0, 0, 0, 0.4),
+          0 0 0 1px rgba(255, 255, 255, 0.06);
+      }
+      .chart-wrap img {
+        width: 100%;
+        height: auto;
+        display: block;
+      }
+      .chart-caption {
+        margin-top: 12px;
+        font-size: 0.78rem;
+        color: var(--ink-soft);
+        line-height: 1.5;
+        font-style: italic;
+      }
+      .chart-caption strong {
+        font-style: normal;
+        color: var(--ink-mid);
+      }
+      .insight-box {
+        display: flex;
+        gap: 20px;
+        align-items: flex-start;
+        background: var(--paper-warm);
+        border-left: 4px solid var(--red);
+        border-radius: 0 6px 6px 0;
+        padding: clamp(20px, 2.5vw, 32px);
+        margin-bottom: clamp(40px, 5vw, 65px);
+        max-width: var(--max-w);
+      }
+      .insight-box--light {
+        background: rgba(255, 255, 255, 0.05);
+        border-left-color: var(--red-bright);
+      }
+      .insight-icon {
+        font-size: 1.4rem;
+        flex-shrink: 0;
+        margin-top: 2px;
+        line-height: 1;
+      }
+      .insight-box p {
+        font-weight: 300;
+        font-size: clamp(14px, 1.1vw, 16px);
+        line-height: 1.75;
+        max-width: none;
+        text-align: left;
+      }
+      .insight-box strong {
+        color: var(--red);
+        font-weight: 700;
+      }
+      .section--dark .insight-box p {
+        color: rgba(255, 255, 255, 0.75);
+      }
+      .two-col {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: clamp(30px, 4vw, 60px);
+        align-items: start;
+        margin-bottom: clamp(40px, 5vw, 65px);
+        max-width: var(--max-w);
+      }
+      .two-col h3 {
+        font-family: var(--font-display);
+        font-size: clamp(20px, 2vw, 26px);
+        font-weight: 700;
+        margin-bottom: 16px;
+        line-height: 1.2;
+      }
+      .two-col p {
+        font-weight: 300;
+        line-height: 1.75;
+        color: var(--ink-mid);
+        font-size: clamp(14px, 1.1vw, 16px);
+        margin-bottom: 20px;
+      }
+      .finding-tag {
+        display: inline-block;
+        background: var(--red);
+        color: var(--white);
+        font-size: 0.72rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        padding: 5px 12px;
+        border-radius: 3px;
+      }
+      .conclusion-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+        margin-bottom: 50px;
+        max-width: var(--max-w);
+      }
+      .conclusion-card {
+        background: var(--dark-card);
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        border-radius: 8px;
+        padding: 28px 24px;
+        transition: border-color 0.3s, transform 0.3s;
+      }
+      .conclusion-card:hover {
+        border-color: rgba(201, 21, 10, 0.4);
+        transform: translateY(-3px);
+      }
+      .conclusion-card--wide {
+        grid-column: span 4;
+        display: grid;
+        grid-template-columns: auto 1fr;
+        gap: 20px;
+        align-items: start;
+      }
+      .conclusion-card--wide h3 {
+        grid-column: 2;
+        margin-bottom: 0;
+      }
+      .conclusion-card--wide p {
+        grid-column: 2;
+      }
+      .conclusion-card--wide .conclusion-icon {
+        grid-row: 1 / 3;
+      }
+      .conclusion-icon {
+        font-size: 1.6rem;
+        margin-bottom: 14px;
+        display: block;
+      }
+      .conclusion-card h3 {
+        font-family: var(--font-display);
+        font-size: clamp(15px, 1.3vw, 18px);
+        font-weight: 700;
+        margin-bottom: 10px;
+        color: var(--white);
+        line-height: 1.25;
+      }
+      .conclusion-card p {
+        font-weight: 300;
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.55);
+        line-height: 1.65;
+      }
+      .data-note {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.3);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        padding-top: 24px;
+        max-width: var(--max-w);
+        line-height: 1.6;
+      }
+      .data-note strong {
+        color: rgba(255, 255, 255, 0.5);
+      }
+      .site-footer {
+        background: var(--ink);
+        color: rgba(255, 255, 255, 0.25);
+        text-align: center;
+        padding: 28px var(--gutter);
+        font-size: 0.75rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.7s ease, transform 0.7s ease;
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .reveal:nth-child(2) {
+        transition-delay: 0.1s;
+      }
+      .reveal:nth-child(3) {
+        transition-delay: 0.2s;
+      }
+      .reveal:nth-child(4) {
+        transition-delay: 0.3s;
+      }
+      @media (max-width: 900px) {
+        .conclusion-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        .conclusion-card--wide {
+          grid-column: span 2;
+        }
+      }
+      @media (max-width: 640px) {
+        .section-header {
+          flex-direction: column;
+          gap: 8px;
+        }
+        .section-num {
+          font-size: 36px;
+          opacity: 0.25;
+        }
+        .stat-divider {
+          display: none;
+        }
+        .hero-stats {
+          gap: 20px;
+        }
+        .two-col {
+          grid-template-columns: 1fr;
+        }
+        .conclusion-grid {
+          grid-template-columns: 1fr;
+        }
+        .conclusion-card--wide {
+          grid-column: span 1;
+          grid-template-columns: 1fr;
+        }
+        .conclusion-card--wide h3,
+        .conclusion-card--wide p {
+          grid-column: 1;
+        }
+        .section-nav {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <header class="hero">
+      <div class="hero-inner">
+        <div class="hero-label">Data Analysis · 2015–2025</div>
+        <h1>Global<br /><em>Earthquake</em><br />Patterns</h1>
+        <p class="hero-sub">
+          A decade of seismic data: exploring how often, how powerful, how deep,
+          and where. With a focused case study on Nepal.
+        </p>
+        <div class="hero-stats">
+          <div class="stat">
+            <span class="stat-num">80k+</span
+            ><span class="stat-label">Events recorded</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-num">10</span
+            ><span class="stat-label">Years of data</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat">
+            <span class="stat-num">M9.0+</span
+            ><span class="stat-label">Largest events</span>
+          </div>
+        </div>
+      </div>
+      <div class="hero-bg-text" aria-hidden="true">SEISMIC</div>
+    </header>
+
+    <nav class="section-nav" aria-label="Page sections">
+      <a href="#frequency" class="nav-dot" title="Frequency"></a>
+      <a href="#magnitude" class="nav-dot" title="Magnitude"></a>
+      <a href="#depth" class="nav-dot" title="Depth"></a>
+      <a href="#spatial" class="nav-dot" title="Spatial"></a>
+      <a href="#nepal" class="nav-dot" title="Nepal"></a>
+      <a href="#conclusion" class="nav-dot" title="Conclusion"></a>
+    </nav>
+
+    <main>
+      <!-- ══════════════ 01 FREQUENCY ══════════════ -->
+      <section id="frequency" class="section">
+        <div class="section-header">
+          <div class="section-num">01</div>
+          <div class="section-title-block">
+            <h2>Earthquake Frequency<br />Over Time</h2>
+            <p class="section-question">
+              Is global earthquake activity increasing, decreasing, or stable?
+            </p>
+          </div>
+        </div>
+        <div class="chart-block chart-block--wide">
+          <div class="chart-wrap">
+            <iframe
+              src="charts./annual.html"
+              width="100%"
+              height="550"
+              style="border:none; display:block; margin:0; padding:0; width:100%"
+              loading="lazy"
+            ></iframe>
+          </div>
+          </div>
+          <div class="chart-caption">
+            <strong>Annual Earthquake Frequency (2015–2025).</strong>
+            Plotly. Event counts per year with a linear trend line and ±1
+            standard deviation band.
+          </div>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">↗</div>
+          <p>
+            Annual counts fluctuate but show
+            <strong>no dramatic upward or downward trend</strong> over the
+            decade. The ±1 SD band illustrates that year-to-year variation is
+            normal statistical noise, not a structural shift. Tectonic processes
+            operate on geological timescales, so a decade is simply too short to
+            reveal long-term change.
+          </p>
+        </div>
+        <div class="chart-block chart-block--wide">
+          <div class="chart-wrap">
+            <img
+              src="images /frequency_by_magnitude_category.png"
+              loading="lazy"
+              alt="Stacked bar chart of annual earthquake frequency by magnitude category"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong>Frequency by Magnitude Category (Stacked).</strong>
+            Matplotlib. Each bar broken down by magnitude class, showing
+            proportional stability across years.
+          </div>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">≈</div>
+          <p>
+            Breaking frequency down by magnitude class reveals something
+            striking: the
+            <strong
+              >proportion of each category is remarkably consistent year after
+              year</strong
+            >. Moderate events (M4–5) dominate every year.
+          </p>
+        </div>
+      </section>
+
+      <!-- ══════════════ 02 MAGNITUDE ══════════════ -->
+      <section id="magnitude" class="section section--dark">
+        <div class="section-header">
+          <div class="section-num">02</div>
+          <div class="section-title-block">
+            <h2>Magnitude<br />Distribution</h2>
+            <p class="section-question">
+              What does the global distribution of earthquake severity look
+              like?
+            </p>
+          </div>
+        </div>
+        <div class="chart-block chart-block--wide">
+          <div class="chart-wrap">
+            <img
+              src="images /magnitude_distribution_energy.png"
+              loading="lazy"
+              alt="Magnitude distribution histogram with energy release panel"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong
+              >Magnitude Distribution & Energy Release (2015–2025).</strong
+            >
+            Matplotlib. Left: histogram of all recorded magnitudes. Right:
+            relative energy released per magnitude unit.
+          </div>
+        </div>
+        <div class="insight-box insight-box--light">
+          <div class="insight-icon">⚡</div>
+          <p>
+            The histogram confirms a heavy right-skew:
+            <strong
+              >the vast majority of earthquakes are light or moderate</strong
+            >. But the energy panel tells a different story. A single M8.0 event
+            releases roughly 1,000× the energy of an M6.0! Rare, high-magnitude
+            events dominate total seismic energy output despite being barely
+            visible in event-count charts.
+          </p>
+        </div>
+        <div class="chart-block chart-block--mid">
+          <div class="chart-wrap">
+            <iframe
+              src="charts./mag_dist_NvG.html"
+              width="100%"
+              height="550"
+              style="border:none; display:block; margin:0; padding:0; width:100%"
+              loading="lazy"
+            ></iframe>
+          </div>  
+          </div>
+          <div class="chart-caption">
+            <strong>Nepal vs Global: Magnitude Class Breakdown.</strong>
+            Plotly. Comparing the share of each magnitude class between
+            Nepal and the global catalogue, showing Nepal's disproportionate
+            share of higher-magnitude events in the past decade.
+          </div>
+        </div>
+        <div class="insight-box insight-box--light">
+          <div class="insight-icon">🇳🇵</div>
+          <p>
+            Nepal produces
+            <strong
+              >M7+ events at a significantly higher rate than the global
+              average</strong
+            >. While Nepal accounts for a tiny fraction of total event counts,
+            its outsized share of major quakes means its risk profile far
+            exceeds what frequency alone would suggest.
+          </p>
+        </div>
+      </section>
+
+      <!-- ══════════════ 03 DEPTH ══════════════ -->
+      <section id="depth" class="section">
+        <div class="section-header">
+          <div class="section-num">03</div>
+          <div class="section-title-block">
+            <h2>Earthquake<br />Depth</h2>
+            <p class="section-question">
+              Does depth determine severity? And where do shallow earthquakes
+              strike?
+            </p>
+          </div>
+        </div>
+        <div class="chart-block chart-block--wide">
+          <div class="chart-wrap">
+            <iframe
+              title="Are Stronger Earthquakes Deeper? (Magnitude >= 6)"
+              aria-label="Scatter Plot"
+              id="datawrapper-chart-6yx3q"
+              src="https://datawrapper.dwcdn.net/6yx3q/2/"
+              scrolling="no"
+              frameborder="0"
+              style="border: none; width: 100%;"
+              height="400"
+              data-external="1"
+            ></iframe>
+          </div>
+        
+          <div class="chart-caption">
+            <strong>Are stronger earthquakes deeper? (M ≥ 6).</strong>
+            Datawrapper. The relationship between magnitude and depth appears weak, with most large earthquakes still occurring at relatively shallow depths.
+          </div>
+        </div>
+        <div class="chart-block chart-block--wide">
+          <div class="chart-wrap">
+            <img
+              src="images /depth_characteristics_global.png"
+              loading="lazy"
+              alt="Depth distribution histogram and proportional breakdown"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong
+              >Depth Distribution & Category Proportions (2015–2025).</strong
+            >
+            Matplotlib. Left: histogram of depth in km. Right: proportion of
+            shallow, intermediate, and deep events.
+          </div>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">▼</div>
+          <p>
+            <strong>Over two-thirds of all earthquakes are shallow</strong>
+            (under 70 km) — the category most destructive at the surface, as
+            seismic energy has less distance to dissipate before reaching
+            populated areas. Deep earthquakes, while dramatic in isolation,
+            rarely cause comparable surface damage.
+          </p>
+        </div>
+        <div class="two-col">
+          <div class="two-col-text">
+            <h3>Does depth predict magnitude?</h3>
+            <p>
+              It seems intuitive: deeper earthquakes experience greater pressure
+              and may therefore rupture more violently. Testing this directly on
+              M6.0+ events reveals a near-flat trendline.
+              <strong>Depth is not a reliable predictor of magnitude</strong>.
+              The most catastrophic events regularly occur at shallow depths,
+              precisely because that is where stress accumulates fastest along
+              active fault systems.
+            </p>
+            <div class="finding-tag">Finding: No meaningful correlation</div>
+          </div>
+          <div class="two-col-chart">
+            <div class="chart-wrap">
+              <img
+                src="images /fin_depth_distribution_nepal_vs_global.png"
+                loading="lazy"
+                alt="Nepal vs global depth distribution comparison"
+              />
+            </div>
+            <div class="chart-caption">
+              <strong>Depth Distribution: Nepal vs Global.</strong> Matplotlib.
+              Comparing the depth profile of Nepal earthquakes against the
+              global catalogue.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ 04 SPATIAL ══════════════ -->
+      <section id="spatial" class="section section--dark">
+        <div class="section-header">
+          <div class="section-num">04</div>
+          <div class="section-title-block">
+            <h2>Spatial<br />Distribution</h2>
+            <p class="section-question">
+              Where on Earth does seismic activity concentrate? And why?
+            </p>
+          </div>
+        </div>
+        <p class="section-intro">
+          Four maps, each answering a sharper question: from raw locations, to
+          magnitude-weighted density, to regional hotspots, to the dominant
+          driver of global seismic activity.
+        </p>
+        <p class="section-question" style="margin-bottom: 18px">
+          <strong>Key Question:</strong> What does the general global quake
+          distribution look like?
+        </p>
+
+        <div class="chart-block chart-block--full">
+          <div class="chart-wrap">
+            <img
+              src="images /fin_map_global_distribution_magnitude.png"
+              loading="lazy"
+              alt="Global earthquake density heatmap magnitude weighted 2015-2025"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong
+              >Global Earthquake Distribution Map,
+              2015–2025.</strong
+            >
+            Plotly map showing the global distribution
+            of earthquakes. Darker shades indicate higher magnitude earthquakes.
+          </div>
+        </div>
+        <div class="insight-box insight-box--light">
+          <div class="insight-icon">🍽️</div>
+          <p>
+            From the above map, we can begin to see 
+            <strong
+              >tectonic plates</strong
+            >. By designing the map further around the density of earthquakes, these
+            plates will become even clearer. 
+          </p>
+        </div>
+        </div>
+        <p class="section-question" style="margin-bottom: 18px">
+          <strong>Key Question:</strong> Which regions of the world experience
+          the highest concentration of earthquakes?
+        </p>
+
+        <div class="chart-block chart-block--full">
+          <div class="chart-wrap">
+            <img
+              src="images /global_density_map.png"
+              loading="lazy"
+              alt="Global earthquake density heatmap magnitude weighted 2015-2025"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong
+              >Global Earthquake Density Map (Magnitude Weighted),
+              2015–2025.</strong
+            >
+            Plotly geospatial density heatmap showing the spatial concentration
+            of earthquakes, weighted by magnitude. Brighter regions indicate
+            areas where earthquakes are both more frequent and more powerful,
+            revealing seismic hotspots.
+          </div>
+        </div>
+        <div class="insight-box insight-box--light">
+          <div class="insight-icon">🌍</div>
+          <p>
+            The density map makes the tectonic structure of the Earth
+            immediately visible. Earthquake activity forms continuous bands
+            aligning with major plate boundaries. The
+            <strong>Pacific Ring of Fire</strong> dominates global seismic
+            activity, forming an arc from South America through North America,
+            Japan, Southeast Asia, and New Zealand. Secondary concentrations are
+            also visible along mid-ocean ridges, particularly in the Atlantic.
+          </p>
+        </div>
+
+        <div class="chart-block chart-block--full">
+          <div class="chart-wrap">
+            <img
+              src="images /map_ring_of_fire.png"
+              loading="lazy"
+              alt="Pacific Ring of Fire orthographic globe projection 2015-2025"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong>Pacific Ring of Fire — Orthographic Projection.</strong>
+            Plotly. Globe view isolating the Pacific seismic belt. The
+            orthographic projection makes the arc structure of the Ring of Fire
+            visually immediate and geographically accurate.
+          </div>
+        </div>
+        <div class="insight-box insight-box--light">
+          <div class="insight-icon">🔥</div>
+          <p>
+            The Ring of Fire encircles the Pacific Plate, producing
+            <strong>approximately 90% of the world's earthquakes</strong>.
+            Subduction zones exist along its length, where one plate dives beneath
+            another, generate the stress conditions required for the largest
+            ruptures.
+          </p>
+        </div>
+      </section>
+
+      <!-- ══════════════ 05 NEPAL ══════════════ -->
+      <section id="nepal" class="section nepal-section">
+        <div class="nepal-accent" aria-hidden="true">नेपाल</div>
+        <div class="section-header">
+          <div class="section-num">05</div>
+          <div class="section-title-block">
+            <h2>Case Study:<br />Nepal</h2>
+            <p class="section-question">
+              How does a small landlocked country punch so far above its weight
+              seismically?
+            </p>
+          </div>
+        </div>
+        <p class="section-intro">
+          Nepal sits at the collision point of the Indian and Eurasian plates which is
+          one of the most geologically active areas on Earth. The 2015 Gorkha
+          earthquake made global headlines, but Nepal's seismic story extends
+          far beyond a single event.
+        </p>
+        <div class="chart-block chart-block--full">
+          <div class="chart-wrap">
+            <img
+              src="images /nepal_epicentres_map.png"
+              loading="lazy"
+              alt="Nepal earthquake epicentre map 2015-2025"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong>Nepal Earthquake Epicentres (2015–2025).</strong> Plotly.
+            All recorded Nepal events plotted by location and magnitude class.
+          </div>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">📍</div>
+          <p>
+            Epicentres cluster tightly along the
+            <strong>Main Himalayan Thrust fault</strong>, directly beneath
+            densely populated valleys including Kathmandu. Unlike coastal
+            subduction zones where offshore earthquakes provide some buffer
+            distance, Nepal's earthquakes originate immediately beneath its
+            population centres.
+          </p>
+        </div>
+        <div class="chart-block chart-block--wide">
+          <div class="chart-wrap">
+            <img
+              src="images /magnitude_distribution_nepal_vs_global.png"
+              loading="lazy"
+              alt="Nepal vs global earthquake magnitude comparison"
+            />
+          </div>
+          <div class="chart-caption">
+            <strong>Nepal vs Global: Magnitude Distribution Comparison.</strong>
+            Matplotlib. Comparing magnitude profiles between Nepal and the
+            global catalogue, showing Nepal's disproportionate share of
+            higher-magnitude events.
+          </div>
+        </div>
+        <div class="insight-box">
+          <div class="insight-icon">📊</div>
+          <p>
+            Nepal's
+            <strong>M7+ rate consistently exceeds the global average</strong>
+            relative to its geographic footprint. The 2015 Gorkha sequence is
+            immediately visible as a spike that temporarily distorted global
+            earthquake statistics, confirming this is a structurally hazardous
+            region, not a statistical anomaly.
+          </p>
+        </div>
+      </section>
+
+      <!-- ══════════════ 06 CONCLUSION ══════════════ -->
+      <section id="conclusion" class="section section--conclusion">
+        <div class="section-header">
+          <div class="section-num">06</div>
+          <div class="section-title-block">
+            <h2>Conclusions</h2>
+            <p class="section-question">
+              What does a decade of global earthquake data actually tell us?
+            </p>
+          </div>
+        </div>
+        <div class="conclusion-grid">
+          <div class="conclusion-card">
+            <div class="conclusion-icon">📈</div>
+            <h3>Frequency is stable</h3>
+            <p>
+              No statistically significant trend in annual earthquake counts
+              from 2015–2025. Year-to-year variation reflects normal seismic
+              noise, not a structural change in global tectonics.
+            </p>
+          </div>
+          <div class="conclusion-card">
+            <div class="conclusion-icon">⚡</div>
+            <h3>Count ≠ Impact</h3>
+            <p>
+              Light and moderate events dominate the catalogue numerically, but
+              major and great earthquakes account for the overwhelming majority
+              of total seismic energy released.
+            </p>
+          </div>
+          <div class="conclusion-card">
+            <div class="conclusion-icon">▼</div>
+            <h3>Shallow = Dangerous</h3>
+            <p>
+              Over two-thirds of earthquakes are shallow (&lt;70 km). Depth does
+              not reliably predict magnitude. The most destructive events
+              regularly occur closest to the surface.
+            </p>
+          </div>
+          <div class="conclusion-card">
+            <div class="conclusion-icon">🌏</div>
+            <h3>Geography is destiny</h3>
+            <p>
+              Seismic hazard is geographically structured, not random. The
+              Pacific Ring of Fire, Himalayan collision zone, and Mid-Atlantic
+              Ridge account for the vast majority of global activity.
+            </p>
+          </div>
+          <div class="conclusion-card conclusion-card--wide">
+            <div class="conclusion-icon">🇳🇵</div>
+            <h3>Nepal: small country, outsized risk</h3>
+            <p>
+              Nepal's position on the Main Himalayan Thrust produces M7+ events
+              at rates far above the global average relative to its size. Its
+              epicentres lie directly beneath its population centres acting as a
+              compounding factor that transforms seismic hazard into severe 
+              humanitarian risk.
+            </p>
+          </div>
+        </div>
+        <div class="data-note">
+          <strong>Data source:</strong> USGS Earthquake Catalogue, 2015–2025.
+          Events M4.5+. Analysis and visualisations produced in Python (pandas,
+          matplotlib, seaborn, plotly) and Datawrapper.
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <p>Global Earthquake Analysis · 2015–2025 · Data Visualisation Project</p>
+    </footer>
+
+    <script>
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((el) => {
+            if (el.isIntersecting) el.target.classList.add("visible");
+          });
+        },
+        { threshold: 0.08 }
+      );
+      document
+        .querySelectorAll(
+          ".chart-block, .insight-box, .conclusion-card, .section-header, .two-col"
+        )
+        .forEach((el) => {
+          el.classList.add("reveal");
+          observer.observe(el);
+        });
+      const sections = document.querySelectorAll("section[id]");
+      const dots = document.querySelectorAll(".nav-dot");
+      const navObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              dots.forEach((d) => d.classList.remove("active"));
+              const active = document.querySelector(
+                `.nav-dot[href="#${entry.target.id}"]`
+              );
+              if (active) active.classList.add("active");
+            }
+          });
+        },
+        { threshold: 0.4 }
+      );
+      sections.forEach((s) => navObserver.observe(s));
+    </script>
+  </body>
+</html>

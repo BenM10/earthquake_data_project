@@ -1,0 +1,9 @@
+.DS_Store
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+*.zip
+.venv/
+.env
+# Ignore heavy plotly exports
+figures/*.html
